@@ -94,7 +94,7 @@ const TimerScreen = () => {
       if (isBreak) {
         soundObjects.heartbeat?.playFromPositionAsync(0);
       } else {
-        if (timeLeft % 10 === 0) {
+        if (timeLeft % 5 === 0) {
           soundObjects.tock?.playFromPositionAsync(0);
         } else {
           soundObjects.tick?.playFromPositionAsync(0);
