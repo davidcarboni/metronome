@@ -1,40 +1,60 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
-import { RootStackParamList } from '../../App';
 import CircularProgress from '../components/CircularProgress';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Timer'>;
-
-const TimerScreen = ({ route, navigation }: Props) => {
-  const { duration } = route.params;
+const TimerScreen = () => {
+  const { duration: durationString } = useLocalSearchParams();
+  const duration = Number(durationString);
+  const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(duration);
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
 
-  const tickSound = useRef(new Audio.Sound());
-  const tockSound = useRef(new Audio.Sound());
-  const heartbeatSound = useRef(new Audio.Sound());
+  const soundObjects = useRef<{
+    tick: Audio.Sound | null;
+    tock: Audio.Sound | null;
+    heartbeat: Audio.Sound | null;
+  }>({
+    tick: null,
+    tock: null,
+    heartbeat: null,
+  }).current;
+
+  const [soundsLoaded, setSoundsLoaded] = useState(false);
 
   useEffect(() => {
     const loadSounds = async () => {
       try {
-        await tickSound.current.loadAsync(require('../../assets/sounds/tick.mp3'));
-        await tockSound.current.loadAsync(require('../../assets/sounds/tock.mp3'));
-        await heartbeatSound.current.loadAsync(require('../../assets/sounds/heartbeat.mp3'));
+        const { sound: tick } = await Audio.Sound.createAsync(
+          require('../../assets/sounds/tick.mp3')
+        );
+        soundObjects.tick = tick;
+
+        const { sound: tock } = await Audio.Sound.createAsync(
+          require('../../assets/sounds/tock.mp3')
+        );
+        soundObjects.tock = tock;
+
+        const { sound: heartbeat } = await Audio.Sound.createAsync(
+          require('../../assets/sounds/heartbeat.mp3')
+        );
+        soundObjects.heartbeat = heartbeat;
+
+        setSoundsLoaded(true);
       } catch (error) {
-        console.error("Error loading sounds", error);
+        console.error('Error loading sounds', error);
       }
     };
 
     loadSounds();
 
     return () => {
-      tickSound.current.unloadAsync();
-      tockSound.current.unloadAsync();
-      heartbeatSound.current.unloadAsync();
+      soundObjects.tick?.unloadAsync();
+      soundObjects.tock?.unloadAsync();
+      soundObjects.heartbeat?.unloadAsync();
     };
   }, []);
 
@@ -59,26 +79,33 @@ const TimerScreen = ({ route, navigation }: Props) => {
   useEffect(() => {
     if (timeLeft === 0) {
       if (isBreak) {
+        soundObjects.heartbeat?.stopAsync();
         setIsBreak(false);
         setTimeLeft(duration);
       } else {
+        soundObjects.tick?.stopAsync();
+        soundObjects.tock?.stopAsync();
         setIsBreak(true);
         setTimeLeft(5);
       }
     }
 
-    if (isActive) {
+    if (isActive && soundsLoaded) {
       if (isBreak) {
-        heartbeatSound.current.replayAsync();
+        soundObjects.heartbeat?.playFromPositionAsync(0);
       } else {
         if (timeLeft % 10 === 0) {
-          tockSound.current.replayAsync();
+          soundObjects.tock?.playFromPositionAsync(0);
         } else {
-          tickSound.current.replayAsync();
+          soundObjects.tick?.playFromPositionAsync(0);
         }
       }
+    } else if (soundsLoaded) {
+      soundObjects.tick?.stopAsync();
+      soundObjects.tock?.stopAsync();
+      soundObjects.heartbeat?.stopAsync();
     }
-  }, [timeLeft, isActive, isBreak, duration]);
+  }, [timeLeft, isActive, isBreak, duration, soundsLoaded, soundObjects]);
 
   const toggleTimer = () => {
     setIsActive(!isActive);
@@ -86,7 +113,7 @@ const TimerScreen = ({ route, navigation }: Props) => {
 
   const stopTimer = () => {
     setIsActive(false);
-    navigation.goBack();
+    router.back();
   };
 
   const progress = isBreak ? 100 : (timeLeft / duration) * 100;
