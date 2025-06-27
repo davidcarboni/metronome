@@ -16,7 +16,8 @@
       }
     },
     "androidStatusBar": {
-      "hidden": true
+      "hidden": true,
+      "backgroundColor": "#ffffff"
     },
     "androidNavigationBar": {
       "visible": "sticky-immersive"
@@ -61,6 +62,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d19efddc-0d56-41c8-a653-c2cb97cc35bb"
+      }
     }
   }
 }
