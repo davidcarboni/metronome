@@ -3,7 +3,6 @@
     "name": "metronome",
     "slug": "metronome",
     "version": "1.0.0",
-    "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "metronome",
     "userInterfaceStyle": "automatic",
