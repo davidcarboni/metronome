@@ -14,7 +14,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({ progress }) => {
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <View>
+    <View style={{ transform: [{ scaleX: -1 }] }}>
       <Svg width={size} height={size}>
         {/* Background Circle */}
         <Circle
