@@ -12,6 +12,7 @@ const TimerScreen = () => {
   const [timeLeft, setTimeLeft] = useState(duration);
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
+  const [breakTextColor, setBreakTextColor] = useState('white');
 
   const soundObjects = useRef<{
     tick: Audio.Sound | null;
@@ -86,13 +87,15 @@ const TimerScreen = () => {
         soundObjects.tick?.stopAsync();
         soundObjects.tock?.stopAsync();
         setIsBreak(true);
-        setTimeLeft(5);
+        setTimeLeft(6);
       }
     }
 
     if (isActive && soundsLoaded) {
       if (isBreak) {
-        soundObjects.heartbeat?.playFromPositionAsync(0);
+        if (timeLeft === 5) {
+          soundObjects.heartbeat?.playFromPositionAsync(0);
+        }
       } else {
         if (timeLeft % 5 === 0) {
           soundObjects.tock?.playFromPositionAsync(0);
@@ -106,6 +109,22 @@ const TimerScreen = () => {
       soundObjects.heartbeat?.stopAsync();
     }
   }, [timeLeft, isActive, isBreak, duration, soundsLoaded, soundObjects]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (isBreak) {
+      interval = setInterval(() => {
+        setBreakTextColor((prev) => (prev === 'white' ? 'black' : 'white'));
+      }, 500);
+    } else {
+      setBreakTextColor('white');
+    }
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isBreak]);
 
   const toggleTimer = () => {
     setIsActive(!isActive);
@@ -124,7 +143,9 @@ const TimerScreen = () => {
         <CircularProgress progress={progress} />
         <View style={styles.timerTextContainer}>
           {isBreak ? (
-            <Text style={styles.breakText}>BREAK</Text>
+            <Text style={[styles.breakText, { color: breakTextColor }]}>
+              {timeLeft}
+            </Text>
           ) : (
             <Text style={styles.timerText}>{timeLeft}</Text>
           )}
@@ -168,7 +189,7 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   breakText: {
-    fontSize: 60,
+    fontSize: 80,
     color: '#fff',
     fontWeight: 'bold',
   },
