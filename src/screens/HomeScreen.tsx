@@ -1,13 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../App';
+import { useRouter } from 'expo-router';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+const HomeScreen = () => {
+  const router = useRouter();
 
-const HomeScreen = ({ navigation }: Props) => {
   const navigateToTimer = (duration: number) => {
-    navigation.navigate('Timer', { duration });
+    router.push({ pathname: '/timer', params: { duration } });
   };
 
   return (
