@@ -111,7 +111,7 @@ const TimerScreen = () => {
   }, [timeLeft, isActive, isBreak, duration, soundsLoaded, soundObjects]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
+    let interval: number | null = null;
     if (isBreak) {
       interval = setInterval(() => {
         setBreakTextColor((prev) => (prev === 'white' ? 'black' : 'white'));
