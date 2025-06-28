@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import CircularProgress from '../components/CircularProgress';
 
 const TimerScreen = () => {
@@ -125,6 +126,17 @@ const TimerScreen = () => {
       }
     };
   }, [isBreak]);
+
+  useEffect(() => {
+    if (isActive) {
+      activateKeepAwakeAsync();
+    } else {
+      deactivateKeepAwake();
+    }
+    return () => {
+      deactivateKeepAwake();
+    };
+  }, [isActive]);
 
   const toggleTimer = () => {
     setIsActive(!isActive);
