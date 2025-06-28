@@ -3,6 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
+    "upgrade:expo": "yarn add expo@latest && yarn upgrade && npx expo install --fix && npx expo-doctor",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
