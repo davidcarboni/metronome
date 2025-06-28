@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -7,13 +8,15 @@ export type RootStackParamList = {
 
 export default function RootLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="timer" />
-    </Stack>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="timer" />
+      </Stack>
+    </SafeAreaView>
   );
 }
