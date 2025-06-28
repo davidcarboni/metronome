@@ -13,7 +13,6 @@ const TimerScreen = () => {
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [breakTextColor, setBreakTextColor] = useState('white');
-  const [roundsCount, setRoundsCount] = useState(1);
 
   const soundObjects = useRef<{
     tick: Audio.Sound | null;
@@ -89,7 +88,6 @@ const TimerScreen = () => {
         soundObjects.tock?.stopAsync();
         setIsBreak(true);
         setTimeLeft(6);
-        setRoundsCount((prev) => prev + 1);
       }
     }
 
