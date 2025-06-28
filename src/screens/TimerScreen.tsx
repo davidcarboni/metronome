@@ -13,6 +13,7 @@ const TimerScreen = () => {
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [breakTextColor, setBreakTextColor] = useState('white');
+  const [roundsCount, setRoundsCount] = useState(1);
 
   const soundObjects = useRef<{
     tick: Audio.Sound | null;
@@ -88,6 +89,7 @@ const TimerScreen = () => {
         soundObjects.tock?.stopAsync();
         setIsBreak(true);
         setTimeLeft(6);
+        setRoundsCount((prev) => prev + 1);
       }
     }
 
@@ -140,7 +142,7 @@ const TimerScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.timerContainer}>
-        <CircularProgress progress={progress} />
+        <CircularProgress progress={progress} size={220} />
         <View style={styles.timerTextContainer}>
           {isBreak ? (
             <Text style={[styles.breakText, { color: breakTextColor }]}>
@@ -163,6 +165,14 @@ const TimerScreen = () => {
           <Ionicons name="stop-circle" size={80} color="white" />
         </TouchableOpacity>
       </View>
+      {/* <View style={styles.roundsContainer}>
+        <Text style={styles.roundsText}>
+          round
+        </Text>
+        <Text style={styles.roundsCount}>
+          {roundsCount}
+        </Text>
+      </View> */}
     </View>
   );
 };
@@ -173,8 +183,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
+    // flexDirection: 'row',
   },
   timerContainer: {
+    flex: 1,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
@@ -183,20 +195,44 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   timerText: {
-    fontSize: 80,
+    fontSize: 120,
     color: '#fff',
     fontWeight: 'bold',
     fontVariant: ['tabular-nums'],
   },
   breakText: {
-    fontSize: 80,
+    fontSize: 120,
     color: '#fff',
     fontWeight: 'bold',
   },
   controlsContainer: {
     flexDirection: 'row',
     marginTop: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // backgroundColor: 'red',
+    // paddingBottom: 20,
   },
+  // roundsContainer: {
+  //   marginTop: 40,
+  //   alignItems: 'center',
+  //   justifyContent: 'center',
+  //   padding: 20,
+  //   // backgroundColor: 'red',
+  //   height: '100%',
+  // },
+  // roundsText: {
+  //   fontSize: 60,
+  //   color: '#fff',
+  //   fontWeight: 'bold',
+  //   fontVariant: ['tabular-nums'],
+  // },
+  // roundsCount: {
+  //   fontSize: 80,
+  //   color: '#fff',
+  //   fontWeight: 'bold',
+  //   fontVariant: ['tabular-nums'],
+  // },
 });
 
 export default TimerScreen;

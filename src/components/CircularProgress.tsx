@@ -4,10 +4,13 @@ import Svg, { Circle } from 'react-native-svg';
 
 interface CircularProgressProps {
   progress: number;
+  size?: number;
 }
 
-const CircularProgress: React.FC<CircularProgressProps> = ({ progress }) => {
-  const size = 200;
+const CircularProgress: React.FC<CircularProgressProps> = ({
+  progress,
+  size = 200,
+}) => {
   const strokeWidth = 20;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
