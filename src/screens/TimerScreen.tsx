@@ -29,12 +29,11 @@ const TimerScreen = () => {
   };
   const tock = () => {
     tockPlayer.seekTo(0);
-    tockPlayer.volume = 0.5;
     tockPlayer.play();
   };
   const singingBowl = () => {
     singingBowlPlayer.seekTo(0);
-    tockPlayer.volume = 0.5;
+    tockPlayer.volume = 0.3;
     singingBowlPlayer.play();
   };
 
