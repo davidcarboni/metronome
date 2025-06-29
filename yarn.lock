@@ -3360,7 +3360,7 @@ expo-asset@~11.1.5:
     "@expo/image-utils" "^0.7.4"
     expo-constants "~17.1.5"
 
-expo-audio@^0.4.7:
+expo-audio@~0.4.7:
   version "0.4.7"
   resolved "https://registry.yarnpkg.com/expo-audio/-/expo-audio-0.4.7.tgz#4b70798159fde78f7b413708db6cb3a2eeb8091a"
   integrity sha512-1TZ8NqbmA0oE3N95bwvJAvu9uoY271Vj1qQkSkPkH4zqTgbi50Y2iaCCSfmR5DlnaCb9EaB2BrH4FnxDGmaH1A==

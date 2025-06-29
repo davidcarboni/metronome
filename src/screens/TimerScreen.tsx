@@ -1,12 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Audio } from 'expo-av';
+import { useAudioPlayer } from 'expo-audio';
 import { Ionicons } from '@expo/vector-icons';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import CircularProgress from '../components/CircularProgress';
 
+const tickSound = require('../../assets/sounds/tick.mp3');
+const tockSound = require('../../assets/sounds/tock.mp3');
+const singingBowlSound = require('../../assets/sounds/singing-bowl.mp3');
+
 const TimerScreen = () => {
+  const tickPlayer = useAudioPlayer(tickSound);
+  const tockPlayer = useAudioPlayer(tockSound);
+  const singingBowlPlayer = useAudioPlayer(singingBowlSound);
+
   const { duration: durationString } = useLocalSearchParams();
   const duration = Number(durationString);
   const router = useRouter();
@@ -15,50 +23,20 @@ const TimerScreen = () => {
   const [isBreak, setIsBreak] = useState(false);
   const [breakTextColor, setBreakTextColor] = useState('white');
 
-  const soundObjects = useRef<{
-    tick: Audio.Sound | null;
-    tock: Audio.Sound | null;
-    singingBowl: Audio.Sound | null;
-  }>({
-    tick: null,
-    tock: null,
-    singingBowl: null,
-  }).current;
-
-  const [soundsLoaded, setSoundsLoaded] = useState(false);
-
-  useEffect(() => {
-    const loadSounds = async () => {
-      try {
-        const { sound: tick } = await Audio.Sound.createAsync(
-          require('../../assets/sounds/tick.mp3')
-        );
-        soundObjects.tick = tick;
-
-        const { sound: tock } = await Audio.Sound.createAsync(
-          require('../../assets/sounds/tock.mp3')
-        );
-        soundObjects.tock = tock;
-
-        const { sound: singingBowl } = await Audio.Sound.createAsync(
-          require('../../assets/sounds/singing-bowl.mp3')
-        );
-        soundObjects.singingBowl = singingBowl;
-
-        setSoundsLoaded(true);
-      } catch (error) {
-        console.error('Error loading sounds', error);
-      }
-    };
-
-    loadSounds();
-
-    return () => {
-      soundObjects.tick?.unloadAsync();
-      soundObjects.tock?.unloadAsync();
-      soundObjects.singingBowl?.unloadAsync();
-    };
-  }, []);
+  const tick = () => {
+    tickPlayer.seekTo(0);
+    tickPlayer.play();
+  };
+  const tock = () => {
+    tockPlayer.seekTo(0);
+    tockPlayer.volume = 0.5;
+    tockPlayer.play();
+  };
+  const singingBowl = () => {
+    singingBowlPlayer.seekTo(0);
+    tockPlayer.volume = 0.5;
+    singingBowlPlayer.play();
+  };
 
   useEffect(() => {
     let interval: number | null = null;
@@ -84,17 +62,17 @@ const TimerScreen = () => {
         setIsBreak(false);
         setTimeLeft(duration);
       } else {
-        soundObjects.tick?.stopAsync();
-        soundObjects.tock?.stopAsync();
-        soundObjects.singingBowl?.stopAsync();
+        // soundObjects.tick?.stopAsync();
+        // soundObjects.tock?.stopAsync();
+        // soundObjects.singingBowl?.stopAsync();
         setIsBreak(true);
         setTimeLeft(6);
       }
     }
 
-    if (isActive && soundsLoaded && !isBreak) {
+    if (isActive && !isBreak) {
       if (timeLeft === 5) {
-        soundObjects.singingBowl?.playFromPositionAsync(0);
+        singingBowl();
       }
       const elapsedSeconds = duration - timeLeft;
       if (elapsedSeconds > 0) {
@@ -102,18 +80,18 @@ const TimerScreen = () => {
         const secondInCycle = (elapsedSeconds - 1) % 5;
         if (secondInCycle < 2) {
           // This covers the 1st and 2nd seconds of the cycle
-          soundObjects.tick?.playFromPositionAsync(0);
+          tick();
         } else {
           // This covers the 3rd, 4th, and 5th seconds
-          soundObjects.tock?.playFromPositionAsync(0);
+          tock();
         }
       }
-    } else if (soundsLoaded) {
-      soundObjects.tick?.stopAsync();
-      soundObjects.tock?.stopAsync();
-      // soundObjects.singingBowl?.stopAsync();
-    }
-  }, [timeLeft, isActive, isBreak, duration, soundsLoaded, soundObjects]);
+    } //else if (soundsLoaded) {
+    // tick.stop();
+    // tock.stop();
+    // soundObjects.singingBowl?.stopAsync();
+    // }
+  }, [timeLeft, isActive, isBreak, duration]);
 
   useEffect(() => {
     let interval: number | null = null;
