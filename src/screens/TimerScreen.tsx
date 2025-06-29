@@ -61,7 +61,8 @@ const TimerScreen = () => {
         setIsBreak(false);
         setTimeLeft(duration);
       } else {
-        setIsActive(false);
+        setIsBreak(true);
+        setTimeLeft(6);
       }
     }
 
