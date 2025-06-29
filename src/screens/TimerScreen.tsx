@@ -98,10 +98,17 @@ const TimerScreen = () => {
           soundObjects.heartbeat?.playFromPositionAsync(0);
         }
       } else {
-        if (timeLeft % 5 === 0) {
-          soundObjects.tock?.playFromPositionAsync(0);
-        } else {
-          soundObjects.tick?.playFromPositionAsync(0);
+        const elapsedSeconds = duration - timeLeft;
+        if (elapsedSeconds > 0) {
+          // 0-indexed second in a 5-second cycle (0, 1, 2, 3, 4)
+          const secondInCycle = (elapsedSeconds - 1) % 5;
+          if (secondInCycle < 2) {
+            // This covers the 1st and 2nd seconds of the cycle
+            soundObjects.tick?.playFromPositionAsync(0);
+          } else {
+            // This covers the 3rd, 4th, and 5th seconds
+            soundObjects.tock?.playFromPositionAsync(0);
+          }
         }
       }
     } else if (soundsLoaded) {
