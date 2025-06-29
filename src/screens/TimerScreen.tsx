@@ -18,12 +18,10 @@ const TimerScreen = () => {
   const soundObjects = useRef<{
     tick: Audio.Sound | null;
     tock: Audio.Sound | null;
-    heartbeat: Audio.Sound | null;
     singingBowl: Audio.Sound | null;
   }>({
     tick: null,
     tock: null,
-    heartbeat: null,
     singingBowl: null,
   }).current;
 
@@ -42,11 +40,6 @@ const TimerScreen = () => {
         );
         soundObjects.tock = tock;
 
-        const { sound: heartbeat } = await Audio.Sound.createAsync(
-          require('../../assets/sounds/heartbeat.mp3')
-        );
-        soundObjects.heartbeat = heartbeat;
-
         const { sound: singingBowl } = await Audio.Sound.createAsync(
           require('../../assets/sounds/singing-bowl.mp3')
         );
@@ -63,7 +56,6 @@ const TimerScreen = () => {
     return () => {
       soundObjects.tick?.unloadAsync();
       soundObjects.tock?.unloadAsync();
-      soundObjects.heartbeat?.unloadAsync();
       soundObjects.singingBowl?.unloadAsync();
     };
   }, []);
@@ -89,7 +81,6 @@ const TimerScreen = () => {
   useEffect(() => {
     if (timeLeft === 0) {
       if (isBreak) {
-        soundObjects.heartbeat?.stopAsync();
         setIsBreak(false);
         setTimeLeft(duration);
       } else {
@@ -101,32 +92,25 @@ const TimerScreen = () => {
       }
     }
 
-    if (isActive && soundsLoaded) {
-      if (isBreak) {
-        if (timeLeft === 5) {
-          soundObjects.heartbeat?.playFromPositionAsync(0);
-        }
-      } else {
-        if (timeLeft === 5) {
-          soundObjects.singingBowl?.playFromPositionAsync(0);
-        }
-        const elapsedSeconds = duration - timeLeft;
-        if (elapsedSeconds > 0) {
-          // 0-indexed second in a 5-second cycle (0, 1, 2, 3, 4)
-          const secondInCycle = (elapsedSeconds - 1) % 5;
-          if (secondInCycle < 2) {
-            // This covers the 1st and 2nd seconds of the cycle
-            soundObjects.tick?.playFromPositionAsync(0);
-          } else {
-            // This covers the 3rd, 4th, and 5th seconds
-            soundObjects.tock?.playFromPositionAsync(0);
-          }
+    if (isActive && soundsLoaded && !isBreak) {
+      if (timeLeft === 5) {
+        soundObjects.singingBowl?.playFromPositionAsync(0);
+      }
+      const elapsedSeconds = duration - timeLeft;
+      if (elapsedSeconds > 0) {
+        // 0-indexed second in a 5-second cycle (0, 1, 2, 3, 4)
+        const secondInCycle = (elapsedSeconds - 1) % 5;
+        if (secondInCycle < 2) {
+          // This covers the 1st and 2nd seconds of the cycle
+          soundObjects.tick?.playFromPositionAsync(0);
+        } else {
+          // This covers the 3rd, 4th, and 5th seconds
+          soundObjects.tock?.playFromPositionAsync(0);
         }
       }
     } else if (soundsLoaded) {
       soundObjects.tick?.stopAsync();
       soundObjects.tock?.stopAsync();
-      soundObjects.heartbeat?.stopAsync();
       // soundObjects.singingBowl?.stopAsync();
     }
   }, [timeLeft, isActive, isBreak, duration, soundsLoaded, soundObjects]);
