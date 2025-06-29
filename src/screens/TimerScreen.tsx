@@ -19,10 +19,12 @@ const TimerScreen = () => {
     tick: Audio.Sound | null;
     tock: Audio.Sound | null;
     heartbeat: Audio.Sound | null;
+    singingBowl: Audio.Sound | null;
   }>({
     tick: null,
     tock: null,
     heartbeat: null,
+    singingBowl: null,
   }).current;
 
   const [soundsLoaded, setSoundsLoaded] = useState(false);
@@ -45,6 +47,11 @@ const TimerScreen = () => {
         );
         soundObjects.heartbeat = heartbeat;
 
+        const { sound: singingBowl } = await Audio.Sound.createAsync(
+          require('../../assets/sounds/singing-bowl.mp3')
+        );
+        soundObjects.singingBowl = singingBowl;
+
         setSoundsLoaded(true);
       } catch (error) {
         console.error('Error loading sounds', error);
@@ -57,6 +64,7 @@ const TimerScreen = () => {
       soundObjects.tick?.unloadAsync();
       soundObjects.tock?.unloadAsync();
       soundObjects.heartbeat?.unloadAsync();
+      soundObjects.singingBowl?.unloadAsync();
     };
   }, []);
 
@@ -87,6 +95,7 @@ const TimerScreen = () => {
       } else {
         soundObjects.tick?.stopAsync();
         soundObjects.tock?.stopAsync();
+        soundObjects.singingBowl?.stopAsync();
         setIsBreak(true);
         setTimeLeft(6);
       }
@@ -98,6 +107,9 @@ const TimerScreen = () => {
           soundObjects.heartbeat?.playFromPositionAsync(0);
         }
       } else {
+        if (timeLeft === 5) {
+          soundObjects.singingBowl?.playFromPositionAsync(0);
+        }
         const elapsedSeconds = duration - timeLeft;
         if (elapsedSeconds > 0) {
           // 0-indexed second in a 5-second cycle (0, 1, 2, 3, 4)
@@ -115,6 +127,7 @@ const TimerScreen = () => {
       soundObjects.tick?.stopAsync();
       soundObjects.tock?.stopAsync();
       soundObjects.heartbeat?.stopAsync();
+      // soundObjects.singingBowl?.stopAsync();
     }
   }, [timeLeft, isActive, isBreak, duration, soundsLoaded, soundObjects]);
 
