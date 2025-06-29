@@ -18,9 +18,9 @@ const TimerScreen = () => {
   const { duration: durationString } = useLocalSearchParams();
   const duration = Number(durationString);
   const router = useRouter();
-  const [timeLeft, setTimeLeft] = useState(duration);
+  const [timeLeft, setTimeLeft] = useState(6);
   const [isActive, setIsActive] = useState(false);
-  const [isBreak, setIsBreak] = useState(false);
+  const [isBreak, setIsBreak] = useState(true);
   const [breakTextColor, setBreakTextColor] = useState('white');
 
   const tick = () => {
@@ -61,11 +61,7 @@ const TimerScreen = () => {
         setIsBreak(false);
         setTimeLeft(duration);
       } else {
-        // soundObjects.tick?.stopAsync();
-        // soundObjects.tock?.stopAsync();
-        // soundObjects.singingBowl?.stopAsync();
-        setIsBreak(true);
-        setTimeLeft(6);
+        setIsActive(false);
       }
     }
 
@@ -85,11 +81,7 @@ const TimerScreen = () => {
           tock();
         }
       }
-    } //else if (soundsLoaded) {
-    // tick.stop();
-    // tock.stop();
-    // soundObjects.singingBowl?.stopAsync();
-    // }
+    }
   }, [timeLeft, isActive, isBreak, duration]);
 
   useEffect(() => {
@@ -120,7 +112,11 @@ const TimerScreen = () => {
   }, [isActive]);
 
   const toggleTimer = () => {
-    setIsActive(!isActive);
+    if (!isActive) {
+      setIsActive(true);
+    } else {
+      setIsActive(false);
+    }
   };
 
   const stopTimer = () => {
