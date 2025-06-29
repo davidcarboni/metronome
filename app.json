@@ -57,7 +57,8 @@
             "./assets/fonts/PublicSans-900.ttf"
           ]
         }
-      ]
+      ],
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true
