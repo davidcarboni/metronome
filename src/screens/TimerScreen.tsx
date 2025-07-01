@@ -67,7 +67,7 @@ const TimerScreen = () => {
     }
 
     if (isActive && !isBreak) {
-      if (timeLeft === 5) {
+      if (timeLeft === 4) {
         singingBowl();
       }
       const elapsedSeconds = duration - timeLeft;
