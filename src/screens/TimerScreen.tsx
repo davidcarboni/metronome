@@ -83,7 +83,7 @@ const TimerScreen = () => {
         }
       }
     }
-  }, [timeLeft, isActive, isBreak, duration]);
+  }, [timeLeft, isActive, isBreak, duration, singingBowl, tick, tock]);
 
   useEffect(() => {
     let interval: number | null = null;
