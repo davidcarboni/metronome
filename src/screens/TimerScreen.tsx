@@ -24,7 +24,7 @@ const TimerScreen = () => {
   const [breakTextColor, setBreakTextColor] = useState('white');
 
   useEffect(() => {
-    let interval: number | null = null;
+    let interval: number | NodeJS.Timeout | null = null;
     if (isActive) {
       interval = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
@@ -87,7 +87,7 @@ const TimerScreen = () => {
   }, [timeLeft, isActive, isBreak, duration, tickPlayer, tockPlayer, singingBowlPlayer]);
 
   useEffect(() => {
-    let interval: number | null = null;
+    let interval: number | NodeJS.Timeout | null = null;
     if (isBreak) {
       interval = setInterval(() => {
         setBreakTextColor((prev) => (prev === 'white' ? 'black' : 'white'));
