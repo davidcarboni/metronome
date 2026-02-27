@@ -23,20 +23,6 @@ const TimerScreen = () => {
   const [isBreak, setIsBreak] = useState(true);
   const [breakTextColor, setBreakTextColor] = useState('white');
 
-  const tick = () => {
-    tickPlayer.seekTo(0);
-    tickPlayer.play();
-  };
-  const tock = () => {
-    tockPlayer.seekTo(0);
-    tockPlayer.play();
-  };
-  const singingBowl = () => {
-    singingBowlPlayer.seekTo(0);
-    tockPlayer.volume = 0.3;
-    singingBowlPlayer.play();
-  };
-
   useEffect(() => {
     let interval: number | null = null;
     if (isActive) {
@@ -56,6 +42,21 @@ const TimerScreen = () => {
   }, [isActive]);
 
   useEffect(() => {
+
+    const tick = () => {
+      tickPlayer.seekTo(0);
+      tickPlayer.play();
+    };
+    const tock = () => {
+      tockPlayer.seekTo(0);
+      tockPlayer.play();
+    };
+    const singingBowl = () => {
+      singingBowlPlayer.seekTo(0);
+      tockPlayer.volume = 0.3;
+      singingBowlPlayer.play();
+    };
+
     if (timeLeft === 0) {
       if (isBreak) {
         setIsBreak(false);
@@ -83,7 +84,7 @@ const TimerScreen = () => {
         }
       }
     }
-  }, [timeLeft, isActive, isBreak, duration, singingBowl, tick, tock]);
+  }, [timeLeft, isActive, isBreak, duration, tickPlayer, tockPlayer, singingBowlPlayer]);
 
   useEffect(() => {
     let interval: number | null = null;
