@@ -1,4 +1,4 @@
-import TimerScreen from '../src/screens/TimerScreen';
+import TimerScreen from '../screens/TimerScreen';
 
 export default function Timer() {
   return <TimerScreen />;
