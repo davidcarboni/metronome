@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAudioPlayer } from 'expo-audio';
@@ -9,6 +9,8 @@ import CircularProgress from '../components/CircularProgress';
 const tickSound = require('../../assets/sounds/tick.mp3');
 const tockSound = require('../../assets/sounds/tock.mp3');
 const singingBowlSound = require('../../assets/sounds/singing-bowl.mp3');
+
+const TICK_MS = 100;
 
 const TimerScreen = () => {
   const tickPlayer = useAudioPlayer(tickSound);
@@ -23,68 +25,92 @@ const TimerScreen = () => {
   const [isBreak, setIsBreak] = useState(true);
   const [breakTextColor, setBreakTextColor] = useState('white');
 
+  const phaseStartRef = useRef(0);
+  const isBreakRef = useRef(isBreak);
+  const durationRef = useRef(duration);
+  const wasActiveRef = useRef(false);
+  const pauseStartedAtRef = useRef<number | null>(null);
+  const prevWorkElapsedSecRef = useRef(-1);
+
+  isBreakRef.current = isBreak;
+  durationRef.current = duration;
+
+  /** Wall-clock anchor: pause shifts the anchor forward so elapsed time excludes paused intervals. */
   useEffect(() => {
-    let interval: number | NodeJS.Timeout | null = null;
-    if (isActive) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else {
-      if (interval) {
-        clearInterval(interval);
+    if (!isActive) {
+      if (wasActiveRef.current) {
+        pauseStartedAtRef.current = Date.now();
       }
+      wasActiveRef.current = false;
+      return;
     }
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
+    wasActiveRef.current = true;
+    if (pauseStartedAtRef.current !== null) {
+      phaseStartRef.current += Date.now() - pauseStartedAtRef.current;
+      pauseStartedAtRef.current = null;
+    } else {
+      phaseStartRef.current = Date.now();
+    }
   }, [isActive]);
 
   useEffect(() => {
+    if (!isActive) {
+      return;
+    }
 
     const tick = () => {
-      tickPlayer.seekTo(0);
-      tickPlayer.play();
-    };
-    const tock = () => {
-      tockPlayer.seekTo(0);
-      tockPlayer.play();
-    };
-    const singingBowl = () => {
-      singingBowlPlayer.seekTo(0);
-      tockPlayer.volume = 0.3;
-      singingBowlPlayer.play();
-    };
+      const now = Date.now();
+      let limit = isBreakRef.current ? 6 : durationRef.current;
 
-    if (timeLeft === 0) {
-      if (isBreak) {
-        setIsBreak(false);
-        setTimeLeft(duration);
-      } else {
-        setIsBreak(true);
-        setTimeLeft(6);
+      // Catch up phase transitions without losing fractional seconds (avoids drift at boundaries).
+      while (true) {
+        const elapsedMs = now - phaseStartRef.current;
+        if (elapsedMs < limit * 1000) {
+          break;
+        }
+        phaseStartRef.current += limit * 1000;
+        const nextBreak = !isBreakRef.current;
+        isBreakRef.current = nextBreak;
+        setIsBreak(nextBreak);
+        prevWorkElapsedSecRef.current = -1;
+        limit = nextBreak ? 6 : durationRef.current;
       }
-    }
 
-    if (isActive && !isBreak) {
-      if (timeLeft === 4) {
-        singingBowl();
-      }
-      const elapsedSeconds = duration - timeLeft;
-      if (elapsedSeconds > 0) {
-        // 0-indexed second in a 5-second cycle (0, 1, 2, 3, 4)
-        const secondInCycle = (elapsedSeconds - 1) % 5;
-        if (secondInCycle < 2) {
-          // This covers the 1st and 2nd seconds of the cycle
-          tick();
-        } else {
-          // This covers the 3rd, 4th, and 5th seconds
-          tock();
+      const isBreakNow = isBreakRef.current;
+      limit = isBreakNow ? 6 : durationRef.current;
+      const elapsedSec = Math.floor((now - phaseStartRef.current) / 1000);
+      const nextTimeLeft = Math.max(0, limit - elapsedSec);
+      setTimeLeft(nextTimeLeft);
+
+      if (!isBreakNow) {
+        const workElapsed = Math.floor((now - phaseStartRef.current) / 1000);
+        if (workElapsed !== prevWorkElapsedSecRef.current) {
+          prevWorkElapsedSecRef.current = workElapsed;
+
+          if (workElapsed === durationRef.current - 4) {
+            singingBowlPlayer.seekTo(0);
+            tockPlayer.volume = 0.3;
+            singingBowlPlayer.play();
+          }
+
+          if (workElapsed > 0) {
+            const secondInCycle = (workElapsed - 1) % 5;
+            if (secondInCycle < 2) {
+              tickPlayer.seekTo(0);
+              tickPlayer.play();
+            } else {
+              tockPlayer.seekTo(0);
+              tockPlayer.play();
+            }
+          }
         }
       }
-    }
-  }, [timeLeft, isActive, isBreak, duration, tickPlayer, tockPlayer, singingBowlPlayer]);
+    };
+
+    tick();
+    const id = setInterval(tick, TICK_MS);
+    return () => clearInterval(id);
+  }, [isActive, tickPlayer, tockPlayer, singingBowlPlayer]);
 
   useEffect(() => {
     let interval: number | NodeJS.Timeout | null = null;
@@ -154,14 +180,6 @@ const TimerScreen = () => {
           <Ionicons name="stop-circle" size={80} color="white" />
         </TouchableOpacity>
       </View>
-      {/* <View style={styles.roundsContainer}>
-        <Text style={styles.roundsText}>
-          round
-        </Text>
-        <Text style={styles.roundsCount}>
-          {roundsCount}
-        </Text>
-      </View> */}
     </View>
   );
 };
@@ -172,7 +190,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
-    // flexDirection: 'row',
   },
   timerContainer: {
     flex: 1,
@@ -199,29 +216,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    // backgroundColor: 'red',
-    // paddingBottom: 20,
   },
-  // roundsContainer: {
-  //   marginTop: 40,
-  //   alignItems: 'center',
-  //   justifyContent: 'center',
-  //   padding: 20,
-  //   // backgroundColor: 'red',
-  //   height: '100%',
-  // },
-  // roundsText: {
-  //   fontSize: 60,
-  //   color: '#fff',
-  //   fontWeight: 'bold',
-  //   fontVariant: ['tabular-nums'],
-  // },
-  // roundsCount: {
-  //   fontSize: 80,
-  //   color: '#fff',
-  //   fontWeight: 'bold',
-  //   fontVariant: ['tabular-nums'],
-  // },
 });
 
 export default TimerScreen;
