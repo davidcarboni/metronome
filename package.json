@@ -9,7 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "development": "eas build --platform all --profile development",
+    "development": "eas build --profile development --platform android --local",
     "preview": "eas build --platform android --profile preview",
     "production": "eas build --platform android"
   },
